@@ -63,6 +63,14 @@ Ctrl+Shift+S export to a new file. On a Mac Cmd works wherever Ctrl does.
 configured colours reaching the output, sessions, the settings file and the
 per-platform commands. It needs ffmpeg and PyGObject and uses no display.
 
+`make battery` (needs a display) drives the real editor window to make two
+annotated videos with two different configs, then checks them: every mark
+kind, trim, size, title card, chapters (button and K) and their times in the
+file, chapter banners, sound, card and mark colours from each config, the
+fonts picked, a GIF export, and reopening with the saved session. The videos,
+their configs and a contact sheet of frames each land in `battery-output/`.
+`CLIP_STATE_DIR` keeps its sessions out of your real ones.
+
 ## What's been checked
 
 - On Linux: the test suite; the editor driven through its own input handlers
