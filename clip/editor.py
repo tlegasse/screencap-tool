@@ -394,8 +394,9 @@ class ClipEditor(F.Editor):
 
     def load_state(self, st):
         st = st or {}
-        self._card_auto = True                      # a loaded caption doesn't tick the card
+        self._card_auto = True
         super().load_state(st)
+        self._card_auto = bool(st.get("caption", "").strip())
         self.t_in = max(0.0, st.get("t_in", 0.0))
         self.t_out = min(self.info["dur"], st.get("t_out", self.info["dur"]))
         self.card_btn.set_active(st.get("card", False))

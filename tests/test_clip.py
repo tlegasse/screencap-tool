@@ -162,6 +162,14 @@ class Clip(unittest.TestCase):
                " chapters=[{'t': 0.5, 'name': 'x', 'color': 0}]); print('[]')")
         self.assertTrue(os.path.getsize(dst) > 0)
 
+    def test_typing_a_caption_ticks_the_title_card_once(self):
+        out = run_py(f"ed = C.ClipEditor({self.src!r}, C.probe({self.src!r})); ed.cap.set_text('Hi');"
+                     "first = ed.card_btn.get_active(); ed.card_btn.set_active(False); ed.cap.set_text('Hi there');"
+                     f"again = C.ClipEditor({self.src!r}, C.probe({self.src!r}), {{'caption': 'Kept'}});"
+                     "again.cap.set_text('Kept, edited');"
+                     "print(json.dumps([first, ed.card_btn.get_active(), again.card_btn.get_active()]))")
+        self.assertEqual(out, [True, False, False])
+
     def test_sessions_round_trip_and_exports_get_unique_names(self):
         out = run_py(f"import os; v = {self.src!r};"
                      "C.save_session(v, {'items': [], 't_in': 1.5}); s = C.load_session(v);"
