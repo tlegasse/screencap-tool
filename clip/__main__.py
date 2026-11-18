@@ -5,8 +5,7 @@ import sys
 
 from . import __version__, style
 
-HERE = os.path.dirname(os.path.realpath(__file__))
-EXAMPLE = os.path.join(HERE, "config.example.toml")
+EXAMPLE = os.path.join(style.ROOT, "config.example.toml")
 
 
 def check():

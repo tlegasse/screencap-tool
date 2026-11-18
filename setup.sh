@@ -78,12 +78,12 @@ else
 fi
 chmod +x "$here/bin/clip" "$here"/*.command 2>/dev/null || true
 
-config="${CLIP_CONFIG:-$HOME/.config/clip/config.toml}"
+config="${CLIP_CONFIG:-$here/config.toml}"
 if [ -e "$config" ]; then
 	say "Keeping your settings in $config"
 else
 	mkdir -p "$(dirname "$config")"
-	cp "$here/clip/config.example.toml" "$config"
+	cp "$here/config.example.toml" "$config"
 	say "Wrote the settings file $config (colours, fonts, export folder)"
 fi
 

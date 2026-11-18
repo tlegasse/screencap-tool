@@ -13,7 +13,7 @@ colours and fonts come from a config file.
   font cask.
 - Linux: checks for ffmpeg, PyGObject (GTK 3) and pycairo, and lists the
   package names if any are missing.
-- Both: write `~/.config/clip/config.toml` from `clip/config.example.toml` if
+- Both: write `config.toml` in the Clip folder from `config.example.toml` if
   there isn't one, then run `bin/clip --check`.
 
 ## Command line
@@ -28,7 +28,8 @@ bin/clip --check         what's installed, which fonts and folders are used
 bin/clip --edit-config   create the settings file if needed and open it
 ```
 
-`CLIP_CONFIG=/path/to/file.toml` uses a different settings file.
+Settings are read from `config.toml` in the Clip folder (git-ignored; setup
+writes it). `CLIP_CONFIG=/path/to/file.toml` uses a different file.
 
 ## Keys beyond the README
 

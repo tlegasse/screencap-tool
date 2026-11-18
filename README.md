@@ -38,7 +38,7 @@ marks.
 
 ## Colours and fonts
 
-Open `~/.config/clip/config.toml` in any text editor and change the hex
+Open `config.toml` in this folder with any text editor and change the hex
 colours or font names. Every setting is listed there with its default.
 
 ## If something goes wrong

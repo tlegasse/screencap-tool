@@ -46,8 +46,7 @@ class Config(unittest.TestCase):
             load('[colors]\npalette = {}\n')
 
     def test_the_example_config_is_the_defaults(self):
-        here = os.path.dirname(style.__file__)
-        ex = style.read_config(os.path.join(here, "config.example.toml"))
+        ex = style.read_config(os.path.join(style.ROOT, "config.example.toml"))
         self.assertEqual(ex["colors"], style.DEFAULTS["colors"])
         self.assertEqual(ex["fonts"], style.DEFAULTS["fonts"])
         self.assertEqual(ex["export"], style.DEFAULTS["export"])

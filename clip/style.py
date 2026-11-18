@@ -1,7 +1,7 @@
 """The look: colours, fonts and where files go, from config.toml over the defaults.
 
-The config lives at $CLIP_CONFIG, or ~/.config/clip/config.toml. Every key
-is optional; config.example.toml lists them all with their defaults.
+The config is config.toml in the Clip folder (or $CLIP_CONFIG). Every key
+is optional; config.example.toml beside it lists them all with their defaults.
 """
 import copy
 import os
@@ -70,8 +70,11 @@ class ConfigError(Exception):
     pass
 
 
+ROOT = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+
+
 def config_path():
-    return os.path.expanduser(os.environ.get("CLIP_CONFIG") or "~/.config/clip/config.toml")
+    return os.path.expanduser(os.environ.get("CLIP_CONFIG") or os.path.join(ROOT, "config.toml"))
 
 
 def hexrgb(h, where="colour"):
