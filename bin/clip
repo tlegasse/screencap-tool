@@ -42,4 +42,4 @@ if [ -z "$py" ]; then
 	echo "clip: no Python with GTK 3 found. On a Mac run ./setup.sh; on Linux install PyGObject (GTK 3) and pycairo." >&2
 	exit 127
 fi
-PYTHONPATH="$root${PYTHONPATH:+:$PYTHONPATH}" exec "$py" -m clip "$@"
+exec "$py" -c 'import sys; sys.path.insert(0, sys.argv.pop(1)); from clip.__main__ import main; sys.exit(main())' "$root" "$@"
