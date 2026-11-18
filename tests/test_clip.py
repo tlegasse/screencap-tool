@@ -126,10 +126,10 @@ class Clip(unittest.TestCase):
         self.assertTrue(all(c > 215 for c in pixel(start + 1.5)), pixel(start + 1.5))
         self.assertFalse(all(c > 215 for c in pixel(start + 5.0)), pixel(start + 5.0))
 
-    def test_card_uses_the_configured_paper(self):
+    def test_card_uses_the_configured_background(self):
         cfg = os.path.join(self.tmp, "paper.toml")
         with open(cfg, "w") as f:
-            f.write('[colors]\npaper = "#203040"\n')
+            f.write('[colors]\npaper = "#ffffff"\n[cards]\nbackground = "#203040"\n')
         dst = os.path.join(self.tmp, "paper.mp4")
         run_py(f"info = C.probe({self.src!r}); fig = C.ClipFigure(info['w'], info['h']); fig.caption = 'x';"
                f"C.render({self.src!r}, info, fig, 0.0, 2.0, {dst!r}, 'mp4', card=True,"
@@ -138,6 +138,22 @@ class Clip(unittest.TestCase):
                               "-f", "rawvideo", "-pix_fmt", "rgb24", "-"], capture_output=True).stdout
         r, g, b = raw[(5 * 320 + 5) * 3:(5 * 320 + 5) * 3 + 3]
         self.assertTrue(abs(r - 0x20) < 12 and abs(g - 0x30) < 12 and abs(b - 0x40) < 12, (r, g, b))
+
+    def test_chapter_title_colours_from_the_config(self):
+        cfg = os.path.join(self.tmp, "titles.toml")
+        with open(cfg, "w") as f:
+            f.write('[chapter_titles]\nbackground = "#102030"\n')
+        dst = os.path.join(self.tmp, "titles-coloured.mp4")
+        run_py(f"info = C.probe({self.src!r}); fig = C.ClipFigure(info['w'], info['h']);"
+               f"C.render({self.src!r}, info, fig, 1.0, 6.0, {dst!r}, 'mp4', progress=lambda *_: None,"
+               " chapters=[{'t': 1.0, 'name': 'Start', 'color': 1}], titles=True); print('[]')",
+               env={"CLIP_CONFIG": cfg})
+        start = min(6.0, 2.2 + 0.45) - 0.45
+        raw = subprocess.run(["ffmpeg", "-v", "error", "-ss", str(start + 1.5), "-i", dst, "-frames:v", "1",
+                              "-f", "rawvideo", "-pix_fmt", "rgb24", "-"], capture_output=True).stdout
+        x, y = 40, 240 - 28 - 6
+        r, g, b = raw[(y * 320 + x) * 3:(y * 320 + x) * 3 + 3]
+        self.assertTrue(abs(r - 0x10) < 14 and abs(g - 0x20) < 14 and abs(b - 0x30) < 14, (r, g, b))
 
     def test_gif_has_no_chapters_and_still_renders(self):
         dst = os.path.join(self.tmp, "out.gif")

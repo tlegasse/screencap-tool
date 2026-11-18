@@ -51,6 +51,19 @@ class Config(unittest.TestCase):
         self.assertEqual(ex["colors"], style.DEFAULTS["colors"])
         self.assertEqual(ex["fonts"], style.DEFAULTS["fonts"])
         self.assertEqual(ex["export"], style.DEFAULTS["export"])
+        self.assertEqual(ex["cards"], style.DEFAULTS["cards"])
+        self.assertEqual(ex["chapter_titles"], style.DEFAULTS["chapter_titles"])
+
+    def test_card_colours_follow_the_page_unless_set(self):
+        s = load('[colors]\npaper = "#111111"\n')
+        self.assertEqual(s.card_background, s.paper)
+        self.assertEqual(s.card_text, s.ink)
+        self.assertIsNone(s.card_heading)
+        self.assertIsNone(s.title_background)
+        s = load('[cards]\nbackground = "#000000"\nheading = "#ff0000"\n[chapter_titles]\ntext = "#fff"\n')
+        self.assertEqual((s.card_background, s.card_heading, s.title_text), ((0, 0, 0), (1, 0, 0), (1, 1, 1)))
+        with self.assertRaisesRegex(style.ConfigError, "cards.text"):
+            load('[cards]\ntext = "white"\n')
 
 
 class Desktop(unittest.TestCase):

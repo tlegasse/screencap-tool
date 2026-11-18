@@ -70,7 +70,7 @@ The most-used keys (on a Mac, Cmd works wherever Ctrl is listed):
 | Space | play / pause |
 | ← → (Shift: 1 s) | step a frame |
 | I / O | trim start / end at the playhead |
-| K | chapter at the playhead |
+| K (or **+ Chapter**) | chapter at the playhead |
 | - / + | size of every mark |
 | Ctrl+Z / Ctrl+Shift+Z | undo / redo |
 | Ctrl+O | open another recording |
@@ -102,6 +102,15 @@ paper = "#ffffff"
 sans = ["Inter", "Helvetica Neue"]
 serif = ["Georgia"]
 
+[cards]                       # title card and chapters card
+background = "#1c2c5b"
+text = "#ffffff"
+heading = "#ffd84d"
+
+[chapter_titles]              # the chapter name banner on the picture
+background = "#000000"
+text = "#ffffff"
+
 [export]
 folder = "~/Desktop/Clips"
 format = "gif"
@@ -109,6 +118,9 @@ reveal = true
 ```
 
 - `palette` holds 1 to 9 named colours, in key order.
+- `[cards]` and `[chapter_titles]` colour what Clip generates: the title card,
+  the chapters card and the chapter banner. Anything left blank follows
+  `[colors]`.
 - Each font setting is a list of families; Clip uses the first one installed.
 - Set `CLIP_CONFIG=/path/to/file.toml` to use a different settings file.
 - `clip --check` names any bad value and shows which fonts were picked.

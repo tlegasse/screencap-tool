@@ -34,6 +34,18 @@ DEFAULTS = {
         "trim": "#c98a12",
         "waveform": "#7ac799",
     },
+    "cards": {
+        "background": "",
+        "text": "",
+        "heading": "",
+        "rule": "",
+        "times": "",
+    },
+    "chapter_titles": {
+        "background": "",
+        "text": "",
+        "stripe": "",
+    },
     "fonts": {
         "sans": ["Fira Sans", "Helvetica Neue", "Helvetica", "Arial", "DejaVu Sans", "Sans"],
         "serif": ["C059", "Century Schoolbook", "Charter", "Georgia", "DejaVu Serif", "Serif"],
@@ -69,6 +81,11 @@ def hexrgb(h, where="colour"):
     if len(s) != 6 or any(c not in "0123456789abcdefABCDEF" for c in s):
         raise ConfigError(f"{where}: {h!r} is not a colour like \"#1d5fa6\"")
     return tuple(int(s[i:i + 2], 16) / 255 for i in (0, 2, 4))
+
+
+def optional(value, where):
+    """A colour, or None for a blank one (it then follows another setting)."""
+    return hexrgb(value, where) if str(value).strip() else None
 
 
 def merge(base, over, where=""):
@@ -135,6 +152,17 @@ class Style:
             if key != "palette":
                 setattr(self, key, hexrgb(c[key], f"colors.{key}"))
         self.hex = {k: "#" + str(v).strip().lstrip("#") for k, v in c.items() if k != "palette"}
+
+        cards = cfg["cards"]
+        self.card_background = optional(cards["background"], "cards.background") or self.paper
+        self.card_text = optional(cards["text"], "cards.text") or self.ink
+        self.card_heading = optional(cards["heading"], "cards.heading")
+        self.card_rule = optional(cards["rule"], "cards.rule") or self.accent
+        self.card_times = optional(cards["times"], "cards.times") or self.ink_soft
+        titles = cfg["chapter_titles"]
+        self.title_background = optional(titles["background"], "chapter_titles.background")
+        self.title_text = optional(titles["text"], "chapter_titles.text") or self.ink
+        self.title_stripe = optional(titles["stripe"], "chapter_titles.stripe")
 
         if installed is None:
             installed = installed_families()
