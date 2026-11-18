@@ -25,6 +25,8 @@ def default_clips(mac=IS_MAC):
 
 
 def state_dir(mac=IS_MAC):
+    if os.environ.get("CLIP_STATE_DIR"):
+        return os.environ["CLIP_STATE_DIR"]
     if mac:
         return os.path.expanduser("~/Library/Application Support/Clip")
     return os.path.join(os.environ.get("XDG_STATE_HOME") or os.path.expanduser("~/.local/state"), "clip")
