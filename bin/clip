@@ -1,0 +1,45 @@
+#!/bin/sh
+set -eu
+
+self=$0
+while [ -L "$self" ]; do
+	link=$(readlink "$self")
+	case $link in
+	/*) self=$link ;;
+	*) self=$(dirname "$self")/$link ;;
+	esac
+done
+root=$(cd "$(dirname "$self")/.." && pwd)
+
+for prefix in /opt/homebrew /usr/local; do
+	case ":$PATH:" in
+	*":$prefix/bin:"*) ;;
+	*) [ -d "$prefix/bin" ] && PATH="$prefix/bin:$PATH" ;;
+	esac
+done
+export PATH
+
+has_gtk() {
+	"$1" -c 'import gi, cairo; gi.require_version("Gtk", "3.0"); from gi.repository import Gtk' >/dev/null 2>&1
+}
+
+find_python() {
+	if [ -n "${CLIP_PYTHON:-}" ]; then
+		echo "$CLIP_PYTHON"
+		return
+	fi
+	for py in "$(brew --prefix 2>/dev/null)/bin/python3" /opt/homebrew/bin/python3 /usr/local/bin/python3 \
+		/opt/homebrew/opt/python@3*/bin/python3 /usr/local/opt/python@3*/bin/python3 /usr/bin/python3 python3; do
+		if command -v "$py" >/dev/null 2>&1 && has_gtk "$py"; then
+			echo "$py"
+			return
+		fi
+	done
+}
+
+py=$(find_python)
+if [ -z "$py" ]; then
+	echo "clip: no Python with GTK 3 found. On a Mac run ./install.sh; on Linux install PyGObject (GTK 3) and pycairo." >&2
+	exit 127
+fi
+PYTHONPATH="$root${PYTHONPATH:+:$PYTHONPATH}" exec "$py" -m clip "$@"

@@ -1,0 +1,34 @@
+# Clip settings. All optional; the values here are the defaults.
+# `clip --check` reads this file and names the fonts in use.
+
+[colors]
+# Mark colours for keys 1, 2, 3... (up to 9); the names are tooltips.
+palette = { blue = "#1d5fa6", red = "#b8352c", green = "#2e7a4c", ochre = "#c98a12", ink = "#23272e" }
+
+accent = "#1d5fa6"      # title card rule, caption label
+paper = "#fbf9f4"       # cards and notes
+label_bg = "#fffefb"    # label fill, line halos
+ink = "#1f2329"         # text
+ink_soft = "#4a4f57"    # secondary text
+highlight = "#ffd84d"   # highlighter (H)
+desk = "#8c8f96"        # editor background
+select = "#2f6fed"      # selection, active tool
+timeline = "#383a42"
+playhead = "#b8352c"
+trim = "#c98a12"        # trim brackets (I / O)
+waveform = "#7ac799"
+
+[fonts]
+# First installed family wins.
+sans = ["Fira Sans", "Helvetica Neue", "Helvetica", "Arial", "DejaVu Sans", "Sans"]
+serif = ["C059", "Century Schoolbook", "Charter", "Georgia", "DejaVu Serif", "Serif"]
+
+[export]
+folder = ""             # blank: ~/Movies/Clips (Mac), ~/Videos/Clips (Linux)
+format = "mp4"          # mp4, gif or webm
+copy_to_clipboard = true
+notify = true
+reveal = false          # Finder / file manager
+
+[open]
+folder = ""             # file picker start; blank: the Mac screenshot folder, ~/Videos on Linux
