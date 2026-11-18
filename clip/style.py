@@ -161,7 +161,7 @@ class Style:
         self.card_text = optional(cards["text"], "cards.text") or self.ink
         self.card_heading = optional(cards["heading"], "cards.heading")
         self.card_rule = optional(cards["rule"], "cards.rule") or self.accent
-        self.card_times = optional(cards["times"], "cards.times") or self.ink_soft
+        self.card_times = optional(cards["times"], "cards.times") or hexrgb("#6b6b70")
         titles = cfg["chapter_titles"]
         self.title_background = optional(titles["background"], "chapter_titles.background")
         self.title_text = optional(titles["text"], "chapter_titles.text") or self.ink

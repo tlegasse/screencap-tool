@@ -24,7 +24,7 @@ background = ""         # blank: paper
 text = ""               # caption, chapter names; blank: ink
 heading = ""            # "Figure 1", "Chapters"; blank: accent, ink
 rule = ""               # short bar above the heading; blank: accent
-times = ""              # chapter times; blank: ink_soft
+times = ""              # chapter times; blank: grey #6b6b70
 
 [chapter_titles]
 # Chapter name banner on the picture ("Chapter titles").

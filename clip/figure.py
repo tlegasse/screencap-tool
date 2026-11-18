@@ -290,9 +290,9 @@ class Figure:
         if self.plate and (self.caption.strip() or entries or head):
             y += self.px(8 if entries else 16)
             esc = GLib.markup_escape_text
-            text = ((f'<span font_desc="{esc(font(SANS_BOLD, self.px(14.5)).to_string())}" '
+            text = ((f'<span font_desc="{esc(font(SANS_BOLD, round(self.px(14.5), 1)).to_string())}" '
                      f'foreground="{S.hex["accent"]}">{esc(head)}</span>' if head else "")
-                    + f'<span font_desc="{esc(font(SERIF, self.px(15)).to_string())}">{"   " if head else ""}'
+                    + f'<span font_desc="{esc(font(SERIF, round(self.px(15), 1)).to_string())}">{"   " if head else ""}'
                     f'{GLib.markup_escape_text(self.caption.strip())}</span>')
             lay = make_layout(cr, text, font(SERIF, self.px(15)), width=width, markup=True)
             cap = (page[0] + m, y, lay)
