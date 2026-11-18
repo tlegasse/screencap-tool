@@ -39,7 +39,7 @@ find_python() {
 
 py=$(find_python)
 if [ -z "$py" ]; then
-	echo "clip: no Python with GTK 3 found. On a Mac run ./install.sh; on Linux install PyGObject (GTK 3) and pycairo." >&2
+	echo "clip: no Python with GTK 3 found. On a Mac run ./setup.sh; on Linux install PyGObject (GTK 3) and pycairo." >&2
 	exit 127
 fi
 PYTHONPATH="$root${PYTHONPATH:+:$PYTHONPATH}" exec "$py" -m clip "$@"

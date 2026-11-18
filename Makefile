@@ -1,4 +1,4 @@
-.PHONY: test check install
+.PHONY: test check setup
 
 test:
 	python3 -m unittest discover -s tests -v
@@ -6,5 +6,5 @@ test:
 check:
 	bin/clip --check
 
-install:
-	./install.sh
+setup:
+	./setup.sh

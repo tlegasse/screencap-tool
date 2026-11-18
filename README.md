@@ -12,44 +12,48 @@ Clip started as `clip.py` / `figure.py` in a set of Linux dotfiles. This is the
 same editor, standalone: it has no other dependencies, works on macOS, and its
 colours and fonts are configurable.
 
-## Install on a Mac
+## Set up a Mac
 
-1. Download this folder (Code → Download ZIP, then unzip it) or `git clone` it.
+1. Download this folder (Code → Download ZIP, then unzip it) or `git clone` it,
+   and keep it wherever you like. Clip runs from here.
 2. Open Terminal, `cd` into the folder, and run:
 
    ```sh
-   ./install.sh
+   ./setup.sh
    ```
 
-   Or double-click **Install Clip.command**. If macOS says it's from an
+   Or double-click **Set up this Mac.command**. If macOS says it's from an
    unidentified developer, right-click it and choose Open.
 
-The installer:
+`setup.sh` only prepares the machine. It doesn't install Clip anywhere. It:
 
 - installs [Homebrew](https://brew.sh) if you don't have it (it asks first, and
   Homebrew asks for your password);
 - runs `brew install ffmpeg gtk+3 pygobject3 adwaita-icon-theme` and the
   optional Fira Sans font (the first run takes a few minutes);
-- copies Clip to `~/Library/Application Support/Clip/app` (you can delete the
-  downloaded folder afterwards);
-- makes **~/Applications/Clip.app**: double-click it to pick a recording, or
-  drag it to the Dock and drop videos onto it;
-- links `~/.local/bin/clip` for terminal use;
-- runs `clip --check`.
+- writes the settings file `~/.config/clip/config.toml` with every setting at
+  its default, unless one is already there;
+- runs `bin/clip --check`.
 
-To update, run `./install.sh` again from a newer copy. To remove Clip, run
-`./install.sh --uninstall` (your settings and exports stay).
+Running it again is safe. It updates nothing that's already in place.
+
+Then start Clip from the folder: double-click **Open Clip.command**, or run
+`bin/clip` in Terminal (`bin/clip VIDEO` to open a file directly). To update
+Clip, replace the folder with a newer copy. Your settings and saved sessions
+live outside it.
 
 Recordings from ⌘⇧5 / QuickTime (`.mov`) open as they are. The file picker
 starts in the folder your Mac saves screen recordings to.
 
-## Install on Linux
+## Set up Linux
 
 You need `ffmpeg` and PyGObject with GTK 3 and pycairo from your package
-manager (`install.sh` lists the package names if any are missing). Then run
-`./install.sh`, or run `bin/clip` straight from this folder.
+manager. `./setup.sh` checks for them, lists the package names for any that
+are missing, and writes the settings file. Then run `bin/clip`.
 
 ## Use
+
+Inside the folder `clip` is `bin/clip` (or put `bin/` on your PATH):
 
 ```
 clip                 pick a recording
@@ -89,9 +93,10 @@ file; Ctrl+Shift+S writes a new one.
 
 ## Colours and fonts
 
-Run `clip --edit-config`. It creates `~/.config/clip/config.toml` from
+Edit `~/.config/clip/config.toml`. `setup.sh` writes it from
 [`clip/config.example.toml`](clip/config.example.toml), which lists every
-setting with its default, and opens it. All keys are optional. For example:
+setting with its default. `clip --edit-config` opens it, and creates it first
+if it's missing. All keys are optional. For example:
 
 ```toml
 [colors]
@@ -151,11 +156,11 @@ per-platform commands. They need ffmpeg and PyGObject and use no display.
 
 - Checked on Linux: the test suite; the editor driven through its own input
   handlers (draw, type, trim, chapter, undo / redo, export, reopen with the
-  session); `install.sh` and `--uninstall` into a scratch home; a bad config
-  value giving a clear error.
-- **Not run on a Mac yet**: the Homebrew install, the `osacompile` app,
-  Cmd shortcuts, the clipboard / notification AppleScript, and how the GTK
-  window looks there. If something is off, `~/Library/Logs/Clip.log` and
-  `clip --check` are the first places to look.
+  session); `setup.sh` in a scratch home (writes the settings file once,
+  keeps it on a second run); a bad config value giving a clear error.
+- **Not run on a Mac yet**: the Homebrew setup, `Open Clip.command`, Cmd
+  shortcuts, the clipboard / notification AppleScript, and how the GTK window
+  looks there. If something is off, run `bin/clip` in Terminal to see its
+  errors, and `bin/clip --check`.
 - The window is GTK, so on a Mac it looks like a Linux app rather than a
   native one. It opens as "Python" in the Dock.
