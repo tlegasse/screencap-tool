@@ -51,6 +51,7 @@ from gi.repository import Gdk, GLib, Gtk, Pango, PangoCairo  # noqa: E402
 
 S = F.S
 VIDEO_EXTS = (".mov", ".mp4", ".m4v", ".mkv", ".webm", ".avi")
+IMAGE_EXTS = (".png", ".jpg", ".jpeg", ".webp", ".tif", ".tiff", ".bmp", ".gif", ".heic")
 SHOW_FOR = 3.0         # seconds a new mark stays up
 FADE = 0.18
 CARD = 2.6             # title card length, and its cross-fade
@@ -1434,9 +1435,11 @@ def _render(tmp, path, info, fig, t_in, t_out, out, fmt, card, sound, progress, 
     return out
 
 
-def newest_video(folder):
+def newest_capture(folder):
+    """The newest recording or screenshot in folder, or None."""
     try:
-        names = [os.path.join(folder, n) for n in os.listdir(folder) if n.lower().endswith(VIDEO_EXTS)]
+        names = [os.path.join(folder, n) for n in os.listdir(folder)
+                 if n.lower().endswith(VIDEO_EXTS + IMAGE_EXTS) and " (annotated)" not in n]
     except OSError:
         return None
     return max(names, key=os.path.getmtime) if names else None
@@ -1444,13 +1447,16 @@ def newest_video(folder):
 
 def choose_video(parent=None, folder=None):
     """The system's file picker on the recordings folder; None if cancelled."""
-    d = Gtk.FileChooserNative.new("Open a screen recording", parent, Gtk.FileChooserAction.OPEN, "Open", "Cancel")
-    flt = Gtk.FileFilter()
-    flt.set_name("Videos")
-    for ext in VIDEO_EXTS:
-        flt.add_pattern("*" + ext)
-        flt.add_pattern("*" + ext.upper())
-    d.add_filter(flt)
+    d = Gtk.FileChooserNative.new("Open a recording or screenshot", parent, Gtk.FileChooserAction.OPEN,
+                                  "Open", "Cancel")
+    for name, exts in (("Recordings and screenshots", VIDEO_EXTS + IMAGE_EXTS), ("Recordings", VIDEO_EXTS),
+                       ("Screenshots", IMAGE_EXTS)):
+        flt = Gtk.FileFilter()
+        flt.set_name(name)
+        for ext in exts:
+            flt.add_pattern("*" + ext)
+            flt.add_pattern("*" + ext.upper())
+        d.add_filter(flt)
     folder = folder or S.recordings
     if os.path.isdir(folder):
         d.set_current_folder(folder)
@@ -1490,8 +1496,9 @@ def edit(path, fresh=False):
 def run(paths, fresh=False):
     GLib.set_prgname("Clip")
     GLib.set_application_name("Clip")
+    from . import shot
     path = paths[0] if paths else choose_video()
     while path:
-        path = edit(path, fresh)
+        path = (shot.edit if shot.is_image(path) else edit)(path, fresh)
         fresh = False
     return 0

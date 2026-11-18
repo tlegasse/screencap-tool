@@ -84,6 +84,20 @@ class Desktop(unittest.TestCase):
         self.assertEqual(argv[0], "xclip")
         self.assertIsNone(desktop.copy_commands("/a.mp4", mac=False, env={}, have=lambda n: None))
 
+    def test_png_goes_on_the_clipboard_as_a_picture(self):
+        with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as f:
+            f.write(b"\x89PNG fake")
+        try:
+            everything = lambda name: "/usr/bin/" + name  # noqa: E731
+            argv, data = desktop.copy_commands(f.name, mac=False, env={}, have=everything)
+            self.assertEqual(argv[-1], "image/png")
+            self.assertEqual(data, b"\x89PNG fake")
+            argv, data = desktop.copy_commands(f.name, mac=True)
+            self.assertIn("PNGf", " ".join(argv))
+            self.assertEqual(argv[-1], f.name)
+        finally:
+            os.unlink(f.name)
+
     def test_folders(self):
         self.assertTrue(desktop.default_clips(mac=True).endswith("Movies/Clips"))
         self.assertTrue(desktop.state_dir(mac=True).endswith("Application Support/Clip"))

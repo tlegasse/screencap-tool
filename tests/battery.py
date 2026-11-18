@@ -21,6 +21,7 @@ CONFIGS = {
     "A-textbook": {
         "toml": "",
         "card_bg": "#fbf9f4",
+        "paper": "#fbf9f4",
         "banner_bg": None,
         "box": "#b8352c",
         "fonts": [["Fira Sans", "Helvetica Neue"], ["C059", "Charter"]],
@@ -31,6 +32,7 @@ CONFIGS = {
 [colors]
 palette = { teal = "#0f766e", magenta = "#c026d3", orange = "#ea580c", slate = "#334155" }
 highlight = "#a3e635"
+paper = "#e2e8f0"
 
 [cards]
 background = "#0f172a"
@@ -49,6 +51,7 @@ sans = ["Noto Sans", "DejaVu Sans", "Helvetica Neue"]
 serif = ["DejaVu Serif", "Georgia"]
 """,
         "card_bg": "#0f172a",
+        "paper": "#e2e8f0",
         "banner_bg": "#0f172a",
         "box": "#c026d3",
         "fonts": [["Noto Sans", "DejaVu Sans", "Helvetica Neue"], ["DejaVu Serif", "Georgia"]],
@@ -187,12 +190,82 @@ def drive(video, out_dir, also_gif):
     print("BATTERY " + json.dumps(log))
 
 
+def drive_shot(png, out_dir):
+    sys.path.insert(0, ROOT)
+    from clip import shot
+    from gi.repository import Gdk, GLib, Gtk
+
+    ed = shot.ShotEditor(png)
+    ed.show_all()
+    log = {}
+
+    def ev(x=0, y=0, kv=0, state=0):
+        return types.SimpleNamespace(x=x, y=y, button=1, keyval=kv, state=state,
+                                     type=Gdk.EventType.BUTTON_PRESS, direction=None)
+
+    def win(x, y):
+        s, ox, oy = ed.view()
+        return x * s + ox, y * s + oy
+
+    def key(k, state=0):
+        ed.on_key(ed, ev(kv=k if isinstance(k, int) else Gdk.keyval_from_name(k), state=state))
+
+    def typed(text):
+        for ch in text:
+            key(ord(ch))
+        key(Gdk.KEY_Return)
+
+    def drag(tool, a, b, text=None):
+        key(tool)
+        ed.on_press(None, ev(*win(*a)))
+        ed.on_motion(None, ev(*win(*b)))
+        ed.on_release(None, ev(*win(*b)))
+        if text is not None:
+            typed(text)
+
+    def click(tool, p, text):
+        key(tool)
+        ed.on_press(None, ev(*win(*p)))
+        ed.on_release(None, ev(*win(*p)))
+        typed(text)
+
+    def script():
+        key(Gdk.KEY_1)
+        drag("l", (300, 220), (420, 140), "Search box")
+        key(Gdk.KEY_2)
+        click("n", (700, 300), "Results list")
+        click("n", (900, 200), "Filters")
+        key(Gdk.KEY_3)
+        drag("a", (200, 500), (480, 380))
+        key(Gdk.KEY_2)
+        drag("b", (760, 360), (1060, 560), "New")
+        drag("h", (120, 90), (620, 130))
+        key(Gdk.KEY_4)
+        drag("c", (1180, 150), (1180, 450), "Group")
+        key(Gdk.KEY_1)
+        drag("z", (560, 330), (640, 400))
+        click("t", (860, 600), "Tip: P turns the plate off")
+        drag("x", (40, 600), (300, 700))
+        ed.title_e.set_text("Figure")
+        ed.num.set_text("3")
+        ed.cap.set_text("The search page, annotated")
+        ed.area.grab_focus()
+        log["items"] = sorted(it["kind"] for it in ed.fig.items)
+        key(Gdk.KEY_Return)
+        return False
+
+    GLib.timeout_add(1000, script)
+    Gtk.main()
+    log["out"] = ed.out
+    print("BATTERY " + json.dumps(log))
+
+
 def reopen(video):
     sys.path.insert(0, ROOT)
     from clip import editor as C
     st = C.load_session(video)
     print("BATTERY " + json.dumps({"items": sorted(i["kind"] for i in st["items"]),
-                                   "chapters": [c["name"] for c in st["chapters"]],
+                                   "chapters": [c["name"] for c in st.get("chapters", [])],
                                    "out": st.get("out")}))
 
 
@@ -339,6 +412,26 @@ def main():
         check("reopening restores marks, chapters and export path",
               again["items"] == kinds and again["chapters"] == log["chapters"] and again["out"], "")
 
+        png = os.path.join(d, "screenshot.png")
+        subprocess.run(["ffmpeg", "-v", "error", "-y", "-ss", "3", "-i", src, "-frames:v", "1", png], check=True)
+        slog = child(env, "--shot", png, d)
+        check("screenshot: all 9 mark kinds placed", slog["items"] == sorted(kinds + ["marker"]), slog["items"])
+        shot_out = slog["out"] or ""
+        check("screenshot: exported as '<name> (annotated).png'",
+              os.path.basename(shot_out) == "screenshot (annotated).png" and os.path.exists(shot_out))
+        if os.path.exists(shot_out):
+            sw, sh = map(int, subprocess.run(["ffprobe", "-v", "error", "-show_entries", "stream=width,height",
+                                              "-of", "csv=p=0", shot_out], capture_output=True, text=True,
+                                             check=True).stdout.strip().split(","))
+            check("screenshot: plate adds a margin, key and caption", sw > W and sh > H + 40, (sw, sh))
+            raw = subprocess.run(["ffmpeg", "-v", "error", "-i", shot_out, "-f", "rawvideo", "-pix_fmt", "rgb24",
+                                  "-"], capture_output=True, check=True).stdout
+            check("screenshot: plate paper from config", near(pixel(raw, 3, 3, sw), hexrgb(spec["paper"]), 3),
+                  pixel(raw, 3, 3, sw))
+        again = child(env, "--reopen", png)
+        check("screenshot: reopening restores its marks", again["items"] == sorted(kinds + ["marker"]),
+              again["items"])
+
         sheet = os.path.join(d, "contact-sheet")
         contact_sheet(mp4, [1.0, 3.6, lead + 0.6, lead + 2.6, lead + 4.6, lead + 8.6], sheet)
         results.append((name, mp4, checks))
@@ -354,6 +447,8 @@ def main():
 if __name__ == "__main__":
     if sys.argv[1:2] == ["--drive"]:
         drive(sys.argv[2], sys.argv[3], bool(sys.argv[4]))
+    elif sys.argv[1:2] == ["--shot"]:
+        drive_shot(sys.argv[2], sys.argv[3])
     elif sys.argv[1:2] == ["--reopen"]:
         reopen(sys.argv[2])
     else:

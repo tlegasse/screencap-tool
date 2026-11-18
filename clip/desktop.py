@@ -42,8 +42,21 @@ def applescript(*lines):
 
 
 def copy_commands(path, mac=IS_MAC, env=None, have=shutil.which):
-    """(argv, stdin bytes) that put the file on the clipboard, or None."""
+    """(argv, stdin bytes) that put the file on the clipboard, or None: a PNG
+    as the picture itself (it pastes into chat and documents), anything
+    else as the file."""
     env = os.environ if env is None else env
+    if path.lower().endswith(".png"):
+        if mac:
+            return applescript("set the clipboard to (read (POSIX file (item 1 of argv)) as \u00abclass PNGf\u00bb)") \
+                + [path], None
+        with open(path, "rb") as f:
+            png = f.read()
+        if env.get("WAYLAND_DISPLAY") and have("wl-copy"):
+            return ["wl-copy", "--type", "image/png"], png
+        if have("xclip"):
+            return ["xclip", "-selection", "clipboard", "-t", "image/png"], png
+        return None
     if mac:
         return applescript("set the clipboard to (POSIX file (item 1 of argv))") + [path], None
     from urllib.parse import quote

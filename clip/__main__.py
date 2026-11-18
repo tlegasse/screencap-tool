@@ -61,10 +61,11 @@ def edit_config():
 
 def main(argv=None):
     p = argparse.ArgumentParser(
-        prog="clip", description="Annotate a screen recording, textbook style, and export it.",
+        prog="clip", description="Annotate a screen recording or screenshot, textbook style, and export it.",
         epilog="Keys and everything else: clip --keys")
-    p.add_argument("video", nargs="?", help="the recording to open (default: pick one)")
-    p.add_argument("--latest", action="store_true", help="open the newest video in the recordings folder")
+    p.add_argument("video", nargs="?", help="the recording or screenshot to open (default: pick one)")
+    p.add_argument("--latest", action="store_true",
+                   help="open the newest recording or screenshot in the recordings folder")
     p.add_argument("--fresh", action="store_true", help="start clean, ignoring the marks kept from last time")
     p.add_argument("--keys", action="store_true", help="list the keys and what export does")
     p.add_argument("--check", action="store_true", help="check that everything clip needs is installed")
@@ -86,9 +87,9 @@ def main(argv=None):
         return 0
     path = a.video
     if a.latest:
-        path = editor.newest_video(style.current().recordings)
+        path = editor.newest_capture(style.current().recordings)
         if not path:
-            return fail(f"No videos in {style.current().recordings}.")
+            return fail(f"No recordings or screenshots in {style.current().recordings}.")
     if path and not os.path.isfile(path):
         return fail(f"{path}: no such file.")
     return editor.run([path] if path else [], fresh=a.fresh)

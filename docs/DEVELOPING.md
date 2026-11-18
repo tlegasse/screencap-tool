@@ -19,9 +19,9 @@ colours and fonts come from a config file.
 ## Command line
 
 ```
-bin/clip                 pick a recording
-bin/clip VIDEO           open that one
-bin/clip --latest        the newest video in the recordings folder
+bin/clip                 pick a recording or screenshot
+bin/clip FILE            open that one
+bin/clip --latest        the newest recording or screenshot in the recordings folder
 bin/clip --fresh VIDEO   ignore the session kept from last time
 bin/clip --keys          every key
 bin/clip --check         what's installed, which fonts and folders are used
@@ -49,6 +49,10 @@ Ctrl+Shift+S export to a new file. On a Mac Cmd works wherever Ctrl does.
 
 - `clip/figure.py`: drawing the marks (cairo + Pango) and the base editor
   window (GTK 3).
+- `clip/shot.py`: the screenshot editor: `figure.py`'s editor on a picture
+  (loaded through GdkPixbuf, so JPEG works too), exporting a PNG plate, with
+  the same sessions and clipboard as videos. `editor.run` sends a file to
+  one editor or the other by its extension.
 - `clip/editor.py`: the video editor: timeline, preview through ffmpeg (sound
   through ffplay), sessions, and the export, which renders each mark to a PNG
   and composites them with one ffmpeg filter graph.
@@ -67,7 +71,9 @@ per-platform commands. It needs ffmpeg and PyGObject and uses no display.
 annotated videos with two different configs, then checks them: every mark
 kind, trim, size, title card, chapters (button and K) and their times in the
 file, chapter banners, sound, card and mark colours from each config, the
-fonts picked, a GIF export, and reopening with the saved session. The videos,
+fonts picked, a GIF export, and reopening with the saved session. It also
+annotates a screenshot per config (all mark kinds, the plate with key and
+caption, the plate's paper colour, reopening). The videos,
 their configs and a contact sheet of frames each land in `battery-output/`.
 `CLIP_STATE_DIR` keeps its sessions out of your real ones.
 

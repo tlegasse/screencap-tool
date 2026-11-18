@@ -1,7 +1,9 @@
 # Clip
 
-Annotate a screen recording (arrows, labels, boxes, highlights, zooms, notes,
-blur-outs, chapters, a title card) and export it as an MP4 or GIF.
+Annotate a screen recording or a screenshot: arrows, labels, numbered
+markers, boxes, highlights, zooms, notes and blur-outs. Recordings also get
+chapters and a title card, and export as an MP4 or GIF. Screenshots export
+as a PNG figure with a caption.
 
 ## Set up (once)
 
@@ -14,8 +16,8 @@ for your Mac password.
 
 ## Use
 
-Double-click **Open Clip.command** and pick a recording. Recordings made with
-⌘⇧5 work as they are.
+Double-click **Open Clip.command** and pick a recording or a screenshot.
+Anything made with ⌘⇧5 works as it is.
 
 | Key | |
 |---|---|
@@ -30,10 +32,12 @@ Double-click **Open Clip.command** and pick a recording. Recordings made with
 | Enter | export and close |
 | Esc | close |
 
-Each mark shows for 3 seconds. Drag its bar on the timeline to change when.
+In a recording, each mark shows for 3 seconds. Drag its bar on the timeline
+to change when. On a screenshot, N numbers things and lists them under the
+picture, Tab types a caption, and P turns the frame around it on or off.
 
 Exports go to **Movies → Clips** and are copied to the clipboard, ready to
-paste. Your recording is never changed. Reopening a recording brings back your
+paste. Your original file is never changed. Reopening it brings back your
 marks.
 
 ## Colours and fonts

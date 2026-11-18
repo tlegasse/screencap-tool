@@ -170,6 +170,29 @@ class Clip(unittest.TestCase):
                      "print(json.dumps([first, ed.card_btn.get_active(), again.card_btn.get_active()]))")
         self.assertEqual(out, [True, False, False])
 
+    def test_screenshot_export_uses_the_plate_and_keeps_its_session(self):
+        cfg = os.path.join(self.tmp, "shot.toml")
+        out_dir = os.path.join(self.tmp, "shots")
+        with open(cfg, "w") as f:
+            f.write(f'[colors]\npaper = "#203040"\n[export]\nfolder = "{out_dir}"\n'
+                    "copy_to_clipboard = false\nnotify = false\n")
+        png = os.path.join(self.tmp, "screen.png")
+        subprocess.run(["ffmpeg", "-v", "error", "-y", "-f", "lavfi", "-i", "testsrc=size=640x400",
+                        "-frames:v", "1", png], check=True)
+        out = run_py("from clip import shot; from gi.repository import Gtk;"
+                     f"ed = shot.ShotEditor({png!r}); ed.fig.caption = 'A caption';"
+                     "ed.fig.items = [{'kind': 'arrow', 'color': 1, 'x0': 10, 'y0': 10, 'x1': 200, 'y1': 150}];"
+                     "Gtk.main_quit = lambda: None; ed.save(close=True);"
+                     f"again = shot.ShotEditor({png!r}, C.load_session({png!r}));"
+                     "print(json.dumps([ed.out, len(again.fig.items), again.fig.caption, again.out]))",
+                     env={"CLIP_CONFIG": cfg, "CLIP_STATE_DIR": os.path.join(self.tmp, "shot-state")})
+        path, n, caption, again_out = out
+        self.assertEqual(os.path.basename(path), "screen (annotated).png")
+        self.assertEqual((n, caption, again_out), (1, "A caption", path))
+        r = subprocess.run(["ffmpeg", "-v", "error", "-i", path, "-frames:v", "1", "-f", "rawvideo",
+                            "-pix_fmt", "rgb24", "-"], capture_output=True, check=True).stdout
+        self.assertTrue(all(abs(c - w) <= 2 for c, w in zip(r[0:3], (0x20, 0x30, 0x40))), tuple(r[0:3]))
+
     def test_sessions_round_trip_and_exports_get_unique_names(self):
         out = run_py(f"import os; v = {self.src!r};"
                      "C.save_session(v, {'items': [], 't_in': 1.5}); s = C.load_session(v);"
