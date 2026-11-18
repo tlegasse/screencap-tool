@@ -329,6 +329,10 @@ class ClipEditor(F.Editor):
         self.cap.set_placeholder_text("Title card caption (Tab)")
         kids = bar.get_children()
         cancel_pos = len(kids) - 2
+        self.chapter_btn = Gtk.Button(label="+ Chapter")
+        self.chapter_btn.set_tooltip_text("Add a chapter at the playhead, in the current colour (K)")
+        self.chapter_btn.set_can_focus(False)
+        self.chapter_btn.connect("clicked", lambda *_: self.add_chapter())
         self.card_btn = Gtk.CheckButton(label="Title card", active=False)
         self.card_btn.set_tooltip_text("Open with a title card (its label, if any, and the caption) that fades into the clip")
         self.titles_btn = Gtk.CheckButton(label="Chapter titles", active=False)
@@ -345,14 +349,13 @@ class ClipEditor(F.Editor):
             "Keep the recording's sound in the preview and the export (M); a GIF is always silent"
             if info["audio"] else "This recording has no sound")
         self.sound_btn.connect("toggled", self.on_sound)
+        bar.pack_start(self.chapter_btn, False, False, 0)
         bar.pack_start(self.card_btn, False, False, 0)
         bar.pack_start(self.titles_btn, False, False, 0)
         bar.pack_start(self.fmt, False, False, 0)
         bar.pack_start(self.sound_btn, False, False, 0)
-        bar.reorder_child(self.card_btn, cancel_pos)
-        bar.reorder_child(self.titles_btn, cancel_pos + 1)
-        bar.reorder_child(self.fmt, cancel_pos + 2)
-        bar.reorder_child(self.sound_btn, cancel_pos + 3)
+        for i, w in enumerate((self.chapter_btn, self.card_btn, self.titles_btn, self.fmt, self.sound_btn)):
+            bar.reorder_child(w, cancel_pos + i)
         self.cap.connect("changed", self.on_card_caption)
 
         # the timeline, between the picture and the toolbar
@@ -1108,12 +1111,12 @@ def chapter_title(cr, fig, name, color, draw=True):
     if draw:
         col = F.PALETTE[color % len(F.PALETTE)][1]
         cr.rectangle(x, y, w, h)
-        cr.set_source_rgb(*(F.PAPER[i] * 0.88 + col[i] * 0.12 for i in range(3)))
+        cr.set_source_rgb(*(S.title_background or tuple(F.PAPER[i] * 0.88 + col[i] * 0.12 for i in range(3))))
         cr.fill()
         cr.rectangle(x, y, bar, h)
-        cr.set_source_rgb(*col)
+        cr.set_source_rgb(*(S.title_stripe or col))
         cr.fill()
-        cr.set_source_rgb(*F.INK)
+        cr.set_source_rgb(*S.title_text)
         cr.move_to(x + bar + pad, y + pad)
         PangoCairo.show_layout(cr, lay)
     return x, y, w, h
@@ -1137,7 +1140,7 @@ def card_png(fig, w, h, path):
     """The title card: the label (title and number, if given) and the caption."""
     surf = cairo.ImageSurface(cairo.FORMAT_ARGB32, w, h)
     cr = cairo.Context(surf)
-    cr.set_source_rgb(*F.PAPER)
+    cr.set_source_rgb(*S.card_background)
     cr.paint()
     width = w * 0.68
     z = fig.size
@@ -1149,12 +1152,13 @@ def card_png(fig, w, h, path):
     gap = h * 0.03 if fig.heading() and fig.caption.strip() else 0
     top = (h - (nh + gap + ch)) / 2
     left = (w - width) / 2
-    cr.set_source_rgb(*F.ACCENT)
+    cr.set_source_rgb(*S.card_rule)
     cr.rectangle(left, top - h * 0.035, h * 0.06, max(2, h * 0.006))
     cr.fill()
+    cr.set_source_rgb(*(S.card_heading or F.ACCENT))
     cr.move_to(left, top)
     PangoCairo.show_layout(cr, num)
-    cr.set_source_rgb(*F.INK)
+    cr.set_source_rgb(*S.card_text)
     cr.move_to(left, top + nh + gap)
     PangoCairo.show_layout(cr, cap)
     surf.write_to_png(path)
@@ -1165,7 +1169,7 @@ def chapters_card_png(fig, rows, w, h, path):
     exported file (as a player shows it), one per line."""
     surf = cairo.ImageSurface(cairo.FORMAT_ARGB32, w, h)
     cr = cairo.Context(surf)
-    cr.set_source_rgb(*F.PAPER)
+    cr.set_source_rgb(*S.card_background)
     cr.paint()
     width = w * 0.68
     left = (w - width) / 2
@@ -1182,10 +1186,10 @@ def chapters_card_png(fig, rows, w, h, path):
             break
         z *= 0.9
     top = (h - tall) / 2
-    cr.set_source_rgb(*F.ACCENT)
+    cr.set_source_rgb(*S.card_rule)
     cr.rectangle(left, top - h * 0.035, h * 0.06, max(2, h * 0.006))
     cr.fill()
-    cr.set_source_rgb(*F.INK)
+    cr.set_source_rgb(*(S.card_heading or S.card_text))
     cr.move_to(left, top)
     PangoCairo.show_layout(cr, head)
     y = top + hh + h * 0.04
@@ -1197,11 +1201,11 @@ def chapters_card_png(fig, rows, w, h, path):
         cr.fill()
         name.set_width(int((width - mark * 2 - F.size(when)[0] - h * 0.03) * Pango.SCALE))
         name.set_ellipsize(Pango.EllipsizeMode.END)
-        cr.set_source_rgb(*F.INK)
+        cr.set_source_rgb(*S.card_text)
         cr.move_to(left + mark * 2, y)
         PangoCairo.show_layout(cr, name)
         tw, th = F.size(when)
-        cr.set_source_rgb(*F.INK_SOFT)
+        cr.set_source_rgb(*S.card_times)
         cr.move_to(left + width - tw, y + (nh - th) / 2)
         PangoCairo.show_layout(cr, when)
         y += rh
